@@ -14,8 +14,21 @@ class NegativeNumberStream extends Transform {
 // req => ReadableStream
 // res => WritableStream
 
-const server = http.createServer((req, res) => {
-  return req.pipe(new NegativeNumberStream()).pipe(res);
+const server = http.createServer(async (req, res) => {
+  const buffers = [];
+
+  // o for await of é uma forma de consumir um stream
+  // ele significa que o loop vai esperar o próximo valor do stream, para só então continuar
+  // a diferença entre stream e buffer é que o stream é um fluxo de dados, enquanto o buffer é um dado que já está disponível
+  for await (const chunk of req) {
+    buffers.push(chunk);
+  }
+
+  const fullStreamContent = Buffer.concat(buffers).toString();
+
+  console.log(fullStreamContent);
+
+  return res.end(fullStreamContent);
 });
 
 server.listen(3334);
